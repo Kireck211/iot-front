@@ -1,14 +1,13 @@
 import React, { Component } from "react";
-import { injectIntl} from 'react-intl';
+import { injectIntl } from "react-intl";
 
 import {
-  Nav,
   UncontrolledDropdown,
   DropdownItem,
   DropdownToggle,
-  DropdownMenu,
-  Input
+  DropdownMenu
 } from "reactstrap";
+import Parse from "parse";
 import IntlMessages from "Util/IntlMessages";
 import PerfectScrollbar from "react-perfect-scrollbar";
 
@@ -23,15 +22,13 @@ import {
 
 import notifications from "Data/topnav.notifications.json";
 
-import { menuHiddenBreakpoint,searchPath,localeOptions } from "Constants/defaultValues";
-
+import { menuHiddenBreakpoint, localeOptions } from "Constants/defaultValues";
 
 class TopNav extends Component {
   constructor(props) {
     super(props);
     this.menuButtonClick = this.menuButtonClick.bind(this);
     this.mobileMenuButtonClick = this.mobileMenuButtonClick.bind(this);
-    this.search = this.search.bind(this);
     this.handleChangeLocale = this.handleChangeLocale.bind(this);
     this.handleDocumentClickSearch = this.handleDocumentClickSearch.bind(this);
     this.addEventsSearch = this.addEventsSearch.bind(this);
@@ -52,7 +49,7 @@ class TopNav extends Component {
       (document.msFullscreenElement && document.msFullscreenElement !== null)
     );
   };
-  
+
   handleChangeLocale = locale => {
     this.props.changeLocale(locale);
   };
@@ -125,17 +122,11 @@ class TopNav extends Component {
     });
   }
   handleSearchInputKeyPress(e) {
-    if (e.key === 'Enter') {
-      this.search() 
+    if (e.key === "Enter") {
+      this.search();
     }
   }
-  
-  search() {
-    this.props.history.push(searchPath+"/"+this.state.searchKeyword)
-    this.setState({
-      searchKeyword: ""
-    });
-  }
+
   toggleFullScreen = () => {
     const isInFullScreen = this.isInFullScreen();
 
@@ -187,7 +178,7 @@ class TopNav extends Component {
 
   render() {
     const { containerClassnames, menuClickCount } = this.props;
-    const {messages} = this.props.intl;
+    const { messages } = this.props.intl;
 
     return (
       <nav className="navbar fixed-top">
@@ -229,21 +220,7 @@ class TopNav extends Component {
           </svg>
         </NavLink>
 
-    <div className="search" >
-          <Input
-            name="searchKeyword"
-            id="searchKeyword"
-            placeholder={messages["menu.search"]}
-            value={this.state.searchKeyword}
-            onChange={e => this.handleSearchInputChange(e)}
-            onKeyPress ={e=> this.handleSearchInputKeyPress(e)}
-          />
-          <span className="search-icon" onClick={e => this.handleSearchIconClick(e)}>
-            <i className="simple-icon-magnifier" />
-          </span>
-        </div>
-
- <div className="d-inline-block">
+        <div className="d-inline-block">
           <UncontrolledDropdown className="ml-2">
             <DropdownToggle
               caret
@@ -254,20 +231,20 @@ class TopNav extends Component {
               <span className="name">{this.props.locale.toUpperCase()}</span>
             </DropdownToggle>
             <DropdownMenu className="mt-3" right>
-            {
-              localeOptions.map((l)=>{
-                return(
-                  <DropdownItem onClick={() => this.handleChangeLocale(l.id)} key={l.id}>
-                  {l.name}
-                </DropdownItem>
-                )
-              })
-            }
+              {localeOptions.map(l => {
+                return (
+                  <DropdownItem
+                    onClick={() => this.handleChangeLocale(l.id)}
+                    key={l.id}
+                  >
+                    {l.name}
+                  </DropdownItem>
+                );
+              })}
             </DropdownMenu>
           </UncontrolledDropdown>
         </div>
 
-        
         <a className="navbar-logo" href="/">
           <span className="logo d-none d-xs-block" />
           <span className="logo-mobile d-block d-xs-none" />
@@ -275,44 +252,6 @@ class TopNav extends Component {
 
         <div className="ml-auto">
           <div className="header-icons d-inline-block align-middle">
-            <div className="position-relative d-none d-sm-inline-block">
-              <UncontrolledDropdown className="dropdown-menu-right">
-                <DropdownToggle className="header-icon" color="empty">
-                  <i className="simple-icon-grid" />
-                </DropdownToggle>
-                <DropdownMenu
-                  className="position-absolute mt-3"
-                  right
-                  id="iconMenuDropdown"
-                >
-                  <NavLink to="#" className="icon-menu-item">
-                    <i className="iconsmind-Air-Balloon d-block" />{" "}
-                    <IntlMessages id="menu.gogo" />
-                  </NavLink>
-                  <NavLink to="#" className="icon-menu-item">
-                    <i className="iconsmind-Pantone d-block" />{" "}
-                    <IntlMessages id="menu.ui" />
-                  </NavLink>
-                  <NavLink to="#" className="icon-menu-item">
-                    <i className="iconsmind-Bar-Chart d-block" />{" "}
-                    <IntlMessages id="menu.charts" />
-                  </NavLink>
-                  <NavLink to="#" className="icon-menu-item">
-                    <i className="iconsmind-Speach-BubbleDialog d-block" />{" "}
-                    <IntlMessages id="menu.chat" />
-                  </NavLink>
-                  <NavLink to="#" className="icon-menu-item">
-                    <i className="iconsmind-Formula d-block" />{" "}
-                    <IntlMessages id="menu.survey" />
-                  </NavLink>
-                  <NavLink to="#" className="icon-menu-item">
-                    <i className="iconsmind-Check d-block" />{" "}
-                    <IntlMessages id="menu.todo" />
-                  </NavLink>
-                </DropdownMenu>
-              </UncontrolledDropdown>
-            </div>
-
             <div className="position-relative d-inline-block">
               <UncontrolledDropdown className="dropdown-menu-right">
                 <DropdownToggle
@@ -376,7 +315,9 @@ class TopNav extends Component {
           <div className="user d-inline-block">
             <UncontrolledDropdown className="dropdown-menu-right">
               <DropdownToggle className="p-0" color="empty">
-                <span className="name mr-1">Sarah Kortney</span>
+                <span className="name mr-1">{`${Parse.User.current().get(
+                  "name"
+                )} ${Parse.User.current().get("lastName")}`}</span>
                 <span>
                   <img alt="Profile" src="/assets/img/profile-pic-l.jpg" />
                 </span>
@@ -403,9 +344,11 @@ const mapStateToProps = ({ menu, settings }) => {
   const { containerClassnames, menuClickCount } = menu;
   const { locale } = settings;
 
-  return { containerClassnames, menuClickCount,locale };
+  return { containerClassnames, menuClickCount, locale };
 };
-export default injectIntl(connect(
-  mapStateToProps,
-  { setContainerClassnames, clickOnMobileMenu, logoutUser,changeLocale }
-)(TopNav));
+export default injectIntl(
+  connect(
+    mapStateToProps,
+    { setContainerClassnames, clickOnMobileMenu, logoutUser, changeLocale }
+  )(TopNav)
+);

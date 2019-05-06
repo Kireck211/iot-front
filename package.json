@@ -3,7 +3,7 @@
   "version": "3.0.1",
   "description": "Gogo Start with Auth - React Bootstrap 4 Admin Dashboard",
   "scripts": {
-    "start": "webpack-dev-server --inline --history-api-fallback --progress --config webpack/dev.js",
+    "start": "webpack-dev-server --inline --history-api-fallback --erogress --config webpack/dev.js",
     "build": "webpack --config webpack/prod.js"
   },
   "keywords": [
@@ -51,7 +51,6 @@
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "classnames": "2.2.6",
-    "firebase": "^5.3.0",
     "parse": "^2.4.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",

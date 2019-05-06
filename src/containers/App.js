@@ -13,7 +13,7 @@ import forgotPassword from "Routes/forgot-password";
 
 import "Assets/css/vendor/bootstrap.min.css";
 import "react-perfect-scrollbar/dist/css/styles.css";
-import "Assets/css/sass/themes/gogo.light.purple.scss";
+import "Assets/css/sass/themes/gogo.light.red.scss";
 /*
 color options : 
 	 'light.purple'		'dark.purple'
