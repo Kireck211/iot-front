@@ -8,18 +8,34 @@ import { Colxx } from "Components/CustomBootstrap";
 import { connect } from "react-redux";
 import { loginUser } from "Redux/actions";
 
+import { isValid, isValidEmail } from "Util/Utils";
+
 class LoginLayout extends Component {
   constructor(props) {
     super(props);
+
+    this.handleInputChange = this.handleInputChange.bind(this);
+
     this.state = {
-      email: "demo@gogo.com",
-      password: "gogo123"
+      email: "",
+      password: ""
     };
   }
   onUserLogin() {
     if (this.state.email !== "" && this.state.password !== "") {
       this.props.loginUser(this.state, this.props.history);
     }
+  }
+
+  handleInputChange(event, attribute, validation = v => true) {
+    let newValid = {};
+    newValid[attribute] = validation(event.target.value);
+    let newState = {
+      valid: Object.assign({}, this.state.valid, newValid)
+    };
+    newState[attribute] = event.target.value;
+
+    this.setState(newState);
   }
 
   componentDidMount() {
@@ -58,15 +74,28 @@ class LoginLayout extends Component {
                     </CardTitle>
                     <Form>
                       <Label className="form-group has-float-label mb-4">
-                        <Input type="email" defaultValue={this.state.email} />
+                        <Input
+                          type="email"
+                          value={this.state.email}
+                          onChange={event =>
+                            this.handleInputChange(event, "email", isValidEmail)
+                          }
+                        />
                         <IntlMessages id="user.email" />
                       </Label>
                       <Label className="form-group has-float-label mb-4">
-                        <Input type="password" />
-                        <IntlMessages
-                          id="user.password"
-                          defaultValue={this.state.password}
+                        <Input
+                          type="password"
+                          value={this.state.password}
+                          onChange={event =>
+                            this.handleInputChange(
+                              event,
+                              "password",
+                              password => password.length > 0
+                            )
+                          }
                         />
+                        <IntlMessages id="user.password" />
                       </Label>
                       <div className="d-flex justify-content-between align-items-center">
                         <NavLink to={`/forgot-password`}>

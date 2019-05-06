@@ -1,29 +1,27 @@
-'use strict'
+"use strict";
 
-const webpack = require('webpack')
-const merge = require('webpack-merge')
-const baseConfig = require('./base')
+const webpack = require("webpack");
+const merge = require("webpack-merge");
+const baseConfig = require("./base");
 
-const MiniCssExtractPlugin  = require('mini-css-extract-plugin')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-
-const HOST = 'localhost'
-const PORT = 3008
+const HOST = "localhost";
+const PORT = 3008;
 
 module.exports = merge(baseConfig, {
-  mode: 'development',
+  mode: "development",
 
   devServer: {
-    clientLogLevel: 'warning',
+    clientLogLevel: "warning",
     hot: true,
-    contentBase: 'dist',
+    contentBase: "dist",
     compress: true,
     host: HOST,
     port: PORT,
-    open: true,
     historyApiFallback: true,
     overlay: { warnings: false, errors: true },
-    publicPath: '/',
+    publicPath: "/",
     quiet: true,
     watchOptions: {
       poll: false,
@@ -32,30 +30,25 @@ module.exports = merge(baseConfig, {
   },
 
   module: {
-   rules: [
-    {
-      test: /\.html$/,
-      use: [
+    rules: [
+      {
+        test: /\.html$/,
+        use: [
           {
-              loader: "html-loader",
-              options: { minimize: true }
+            loader: "html-loader",
+            options: { minimize: true }
           }
-      ]
-  },
-  {
-      test: /\.css$/,
-      use: [MiniCssExtractPlugin.loader, "css-loader"]
-  },
-  // Scss compiler
-  {
-      test: /\.scss$/,
-      use: [
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          "sass-loader"
-      ]
-  }
-  
+        ]
+      },
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"]
+      },
+      // Scss compiler
+      {
+        test: /\.scss$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
+      }
     ]
   },
 
@@ -63,6 +56,6 @@ module.exports = merge(baseConfig, {
     new webpack.HotModuleReplacementPlugin(),
     new MiniCssExtractPlugin({
       filename: "assets/css/[name].[hash:4].css"
-  })
+    })
   ]
-})
+});

@@ -7,7 +7,8 @@
     "build": "webpack --config webpack/prod.js"
   },
   "keywords": [
-    "reactjs","react"
+    "reactjs",
+    "react"
   ],
   "author": "Colored Strategies",
   "license": "ISC",
@@ -19,12 +20,20 @@
     "@babel/polyfill": "^7.2.5",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
+    "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "babel-plugin-react-transform": "^3.0.0",
     "clean-webpack-plugin": "^1.0.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^2.1.0",
+    "eslint": "^5.16.0",
+    "eslint-config-react-app": "^4.0.0",
+    "eslint-plugin-flowtype": "^3.7.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-react-hooks": "^1.6.0",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
@@ -43,6 +52,7 @@
     "@babel/runtime": "^7.3.1",
     "classnames": "2.2.6",
     "firebase": "^5.3.0",
+    "parse": "^2.4.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-intl": "2.4.0",
