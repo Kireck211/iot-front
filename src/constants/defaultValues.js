@@ -16,3 +16,4 @@ export const searchPath = "/app/home";
 export const appId = "v9KvsExeAlTVF3DvkcIliW2sM0WrmrsFtpmFb2MY";
 export const javascriptKey = "6zaCpJShZ9TN1QOMkpR9TnMwULLptn4TUDpjnJbx";
 export const serverUrl = "https://parseapi.back4app.com/";
+export const liveQueryServerURL = "ws://iot-front.back4app.io";

@@ -7,10 +7,16 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import App from "Containers/App";
 import { configureStore } from "Redux/store";
-import { appId, serverUrl, javascriptKey } from "Constants/defaultValues";
+import {
+  appId,
+  serverUrl,
+  javascriptKey,
+  liveQueryServerURL
+} from "Constants/defaultValues";
 
 Parse.initialize(appId, javascriptKey);
 Parse.serverURL = serverUrl;
+Parse.liveQueryServerURL = liveQueryServerURL;
 
 const MainApp = () => (
   <Provider store={configureStore()}>

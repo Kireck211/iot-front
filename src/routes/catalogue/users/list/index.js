@@ -662,4 +662,4 @@ const mapStateToProps = ({ settings }) => {
 export default connect(
   mapStateToProps,
   { createNotification }
-)(injectIntl(mouseTrap(DataListLayout)));
+)(injectIntl(UsersList));
