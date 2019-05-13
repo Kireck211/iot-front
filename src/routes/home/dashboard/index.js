@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import { Row, Card, CardTitle, CardBody, Table } from "reactstrap";
+import IntlMessages from "Util/IntlMessages";
+import { Colxx } from "Components/CustomBootstrap";
 import Parse from "parse";
 
 import { LineShadow } from "Components/Charts";
@@ -10,68 +13,48 @@ class Dashboard extends Component {
   constructor(props) {
     super(props);
 
-    const query = new Parse.Query(Parse.Object.extend("Products"));
+    const query = new Parse.Query(Parse.Object.extend("Material")).exists(
+      "quantity"
+    );
 
     this.state = {
-      subscription: query.subscribe()
+      isLoading: false,
+      subscription: query.subscribe(),
+      materials: []
     };
   }
 
   async componentDidMount() {
+    const materials = await new Parse.Query(Parse.Object.extend("Material"))
+      .exists("quantity")
+      .find();
+
     const subscription = await this.state.subscription;
 
-    const weights = await new Parse.Query(
-      Parse.Object.extend("Products")
-    ).find();
-
     await this.setState({
+      isLoading: true,
       subscription,
-      lineChartConfig: Object.assign({}, lineChartConfig, {
-        data: Object.assign({}, lineChartConfig.data, {
-          labels: weights.map((w, index) => index),
-          datasets: lineChartConfig.data.datasets.map(dataset =>
-            Object.assign({}, dataset, {
-              data: weights.map(w => w.get("weight"))
-            })
-          )
-        })
-      })
+      materials: materials.map(material => ({
+        id: material.id,
+        name: material.get("name"),
+        quantity: material.get("quantity")
+      }))
     });
 
     this.state.subscription.on("open", () => {
       console.log("subscription opened");
     });
 
-    this.state.subscription.on("create", object => {
-      console.log("data", [
-        ...this.state.lineChartConfig.data.datasets[0].data,
-        object.get("weight")
-      ]);
-      console.log("labels", [
-        ...this.state.lineChartConfig.data.labels,
-        this.state.lineChartConfig.data.labels.length
-      ]);
-      this.setState({
-        lineChartConfig: Object.assign({}, this.state.lineChartConfig, {
-          data: Object.assign({}, this.state.lineChartConfig.data, {
-            labels: [
-              ...this.state.lineChartConfig.data.labels.map(
-                (w, index) => index
-              ),
-              this.state.lineChartConfig.data.labels.length
-            ],
-            datasets: this.state.lineChartConfig.data.datasets.map(dataset =>
-              Object.assign({}, dataset, {
-                data: [...dataset.data, object.get("weight")]
-              })
-            )
-          })
-        })
-      });
-    });
-
     this.state.subscription.on("update", object => {
-      console.log("object updated", object);
+      const { materials } = this.state;
+      const index = materials.findIndex(material => object.id === material.id);
+      this.setState({
+        materials: [
+          ...materials.slice(0, index),
+          { ...materials[index], quantity: object.get("quantity") },
+          ...materials.slice(index + 1, materials.length)
+        ]
+      });
     });
 
     this.state.subscription.on("close", object => {
@@ -79,15 +62,41 @@ class Dashboard extends Component {
     });
   }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
   render() {
-    return (
-      <div className="dashboard-line-chart">
-        <LineShadow {...this.state.lineChartConfig} />
-      </div>
+    return !this.state.isLoading ? (
+      <div className="loading" />
+    ) : (
+      <Row>
+        <Colxx xxs="12">
+          <Card>
+            <CardBody>
+              <CardTitle>
+                <IntlMessages id="dashboard.inventory" />
+                <Table className="mt-5 text-center">
+                  <thead>
+                    <tr>
+                      <th>
+                        <IntlMessages id="dashboard.raw" />
+                      </th>
+                      <th>
+                        <IntlMessages id="dashboard.quantity" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {this.state.materials.map(material => (
+                      <tr key={material.id}>
+                        <td>{material.name}</td>
+                        <td>{material.quantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </CardTitle>
+            </CardBody>
+          </Card>
+        </Colxx>
+      </Row>
     );
   }
 }

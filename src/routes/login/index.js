@@ -8,8 +8,6 @@ import { Colxx } from "Components/CustomBootstrap";
 import { connect } from "react-redux";
 import { loginUser } from "Redux/actions";
 
-import { isValid, isValidEmail } from "Util/Utils";
-
 class LoginLayout extends Component {
   constructor(props) {
     super(props);
@@ -78,7 +76,7 @@ class LoginLayout extends Component {
                           type="email"
                           value={this.state.email}
                           onChange={event =>
-                            this.handleInputChange(event, "email", isValidEmail)
+                            this.handleInputChange(event, "email", () => true)
                           }
                         />
                         <IntlMessages id="user.email" />

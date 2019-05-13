@@ -13,7 +13,8 @@ import {
   DropdownItem,
   Input,
   CardBody,
-  CardText
+  CardText,
+  Table
 } from "reactstrap";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -37,14 +38,9 @@ class UsersList extends Component {
     super(props);
 
     this.attrs = ["name", "lastName", "email"];
-    this.filterItem = (item, search) =>
-      typeof item === "string"
-        ? item.toLowerCase().includes(search.toLowerCase())
-        : (this.getIndex = this.getIndex.bind(this));
     this.toggleSplit = this.toggleSplit.bind(this);
     this.dataListRender = this.dataListRender.bind(this);
     this.filterOrderItems = this.filterOrderItems.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
     this.onContextMenuClick = this.onContextMenuClick.bind(this);
     this.handleChangeSearch = this.handleChangeSearch.bind(this);
     this.toggleDisplayOptions = this.toggleDisplayOptions.bind(this);
@@ -54,22 +50,14 @@ class UsersList extends Component {
       dropdownSplitOpen: false,
       search: "",
       selectedItems: [],
+      filterItem: (item, search) =>
+        item.toLowerCase().includes(search.toLowerCase()),
+      sortItem: (a, b) => 1,
+      items: [],
       lastChecked: null,
       displayOptionsIsOpen: false,
       isLoading: false
     };
-  }
-
-  componentWillMount() {
-    this.props.bindShortcut(["ctrl+a", "command+a"], () =>
-      this.handleChangeSelectAll(false)
-    );
-    this.props.bindShortcut(["ctrl+d", "command+d"], () => {
-      this.setState({
-        selectedItems: []
-      });
-      return false;
-    });
   }
 
   toggleDisplayOptions() {
@@ -155,32 +143,23 @@ class UsersList extends Component {
     return false;
   }
 
-  async handleClickDelete() {
-    try {
-      await this.setState({ isLoading: false });
-      await Parse.Cloud.run("deleteUsers", {
-        users: this.state.selectedItems
-      });
-      this.dataListRender();
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
   componentDidMount() {
     this.dataListRender();
   }
 
   async dataListRender() {
     try {
-      const admins = await Parse.Cloud.run("getAdmins");
+      const users = await new Parse.Query(Parse.Object.extend("User")).find();
 
-      const items = admins.map(item => {
+      const items = users.map(item => {
         let parsedItem = this.attrs.reduce((obj, value) => {
           obj[value] = item.get(value);
           return obj;
         }, {});
         parsedItem["id"] = item.id;
+        parsedItem["photo"] = item.get("photo")
+          ? item.get("photo")._url
+          : "https://ryanacademy.ie/wp-content/uploads/2017/04/user-placeholder.png";
         return parsedItem;
       });
 
@@ -192,6 +171,12 @@ class UsersList extends Component {
     } catch (err) {
       console.error(err);
     }
+  }
+  changeDisplayMode(mode) {
+    this.setState({
+      displayMode: mode
+    });
+    return false;
   }
 
   onContextMenuClick = (e, data, target) => {
@@ -216,7 +201,7 @@ class UsersList extends Component {
   filterOrderItems() {
     const { items, search, filterItem, sortItem } = this.state;
     return items
-      .filter(item => filterItem(item, search))
+      .filter(item => filterItem(item.name, search))
       .sort((left, right) => sortItem(left, right));
   }
 
@@ -243,10 +228,9 @@ class UsersList extends Component {
                       size="lg"
                       className="top-right-button"
                     >
-                      <IntlMessages id="menu.create" />
+                      <IntlMessages id="users.create" />
                     </Button>
                   </Link>
-                  {"  "}
                   <ButtonDropdown
                     isOpen={this.state.dropdownSplitOpen}
                     toggle={this.toggleSplit}
@@ -301,7 +285,7 @@ class UsersList extends Component {
                   className="pt-0 pl-0 d-inline-block d-md-none"
                   onClick={this.toggleDisplayOptions}
                 >
-                  <IntlMessages id="awards.display-options" />{" "}
+                  <IntlMessages id="users.display-options" />{" "}
                   <i className="simple-icon-arrow-down align-middle" />
                 </Button>
                 <Collapse
@@ -417,213 +401,172 @@ class UsersList extends Component {
             </Colxx>
           </Row>
           <Row>
-            {this.state.items.filter(product =>
-              product.title.toLowerCase().includes(this.state.search)
-            ).length > 0 ? (
-              this.state.items
-                .filter(product =>
-                  product.title.toLowerCase().includes(this.state.search)
-                )
-                .map(product => {
-                  if (this.state.displayMode === "imagelist") {
-                    return (
-                      <Colxx
-                        sm="6"
-                        lg="4"
-                        xl="3"
-                        className="mb-3"
-                        key={product.objectId}
+            {filteredOrderedItems.length > 0 ? (
+              filteredOrderedItems.map(user => {
+                if (this.state.displayMode === "imagelist") {
+                  return (
+                    <Colxx
+                      sm="6"
+                      lg="4"
+                      xl="3"
+                      className="mb-3"
+                      key={user.objectId}
+                    >
+                      <ContextMenuTrigger
+                        id="menu_id"
+                        data={user.objectId}
+                        collect={collect}
                       >
-                        <ContextMenuTrigger
-                          id="menu_id"
-                          data={product.objectId}
-                          collect={collect}
+                        <Card
+                          onClick={event =>
+                            this.handleCheckChange(event, user.objectId)
+                          }
+                          className={classnames({
+                            active: this.state.selectedItems.includes(
+                              user.objectId
+                            )
+                          })}
                         >
-                          <Card
-                            onClick={event =>
-                              this.handleCheckChange(event, product.objectId)
-                            }
-                            className={classnames({
-                              active: this.state.selectedItems.includes(
-                                product.objectId
-                              )
-                            })}
-                          >
-                            <div className="d-flex p-3">
-                              <Link
-                                to={`${this.props.match.path}/edit/${
-                                  product.objectId
-                                }`}
-                                style={{ width: "100%" }}
-                                className="d-flex justify-content-center"
+                          <div className="d-flex p-3">
+                            <img
+                              alt={user.name}
+                              src={user.photo}
+                              style={{
+                                maxHeight: "150px",
+                                maxWidth: "150px"
+                              }}
+                            />
+                          </div>
+                          <CardBody>
+                            <Row>
+                              <Colxx xxs="2">
+                                <CustomInput
+                                  className="itemCheck mb-0"
+                                  type="checkbox"
+                                  id={`check_${user.objectId}`}
+                                  checked={this.state.selectedItems.includes(
+                                    user.objectId
+                                  )}
+                                  onChange={() => {}}
+                                  label=""
+                                />
+                              </Colxx>
+                              <Colxx xxs="10" className="mb-3">
+                                <CardText className="text-muted text-small mb-0 font-weight-light">
+                                  {user.name}
+                                </CardText>
+                              </Colxx>
+                            </Row>
+                          </CardBody>
+                        </Card>
+                      </ContextMenuTrigger>
+                    </Colxx>
+                  );
+                } else if (this.state.displayMode === "thumblist") {
+                  return (
+                    <Colxx xxs="12" key={user.objectId} className="mb-3">
+                      <ContextMenuTrigger
+                        id="menu_id"
+                        data={user.objectId}
+                        collect={collect}
+                      >
+                        <Card
+                          onClick={event =>
+                            this.handleCheckChange(event, user.objectId)
+                          }
+                          className={classnames("d-flex flex-row", {
+                            active: this.state.selectedItems.includes(
+                              user.objectId
+                            )
+                          })}
+                        >
+                          <img
+                            alt={user.name}
+                            src={user.photo}
+                            className="list-thumbnail responsive border-0"
+                          />
+                          <div className="pl-2 d-flex flex-grow-1 min-width-zero">
+                            <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero align-items-lg-center">
+                              <p className="list-item-heading mb-1 truncate">
+                                {user.name}
+                              </p>
+                              <p
+                                className="mb-1 text-muted text-small text-justify p-lg-3"
+                                style={{ maxWidth: "60%" }}
                               >
-                                <img
-                                  alt={product.title}
-                                  src={product.img}
-                                  style={{
-                                    maxHeight: "150px",
-                                    maxWidth: "150px"
-                                  }}
-                                />
-                              </Link>
+                                {user.lastName}
+                              </p>
                             </div>
-                            <CardBody>
-                              <Row>
-                                <Colxx xxs="2">
-                                  <CustomInput
-                                    className="itemCheck mb-0"
-                                    type="checkbox"
-                                    id={`check_${product.objectId}`}
-                                    checked={this.state.selectedItems.includes(
-                                      product.objectId
-                                    )}
-                                    onChange={() => {}}
-                                    label=""
-                                  />
-                                </Colxx>
-                                <Colxx xxs="10" className="mb-3">
-                                  <CardText className="text-muted text-small mb-0 font-weight-light">
-                                    {product.title}
-                                  </CardText>
-                                </Colxx>
-                              </Row>
-                            </CardBody>
-                          </Card>
-                        </ContextMenuTrigger>
-                      </Colxx>
-                    );
-                  } else if (this.state.displayMode === "thumblist") {
-                    return (
-                      <Colxx xxs="12" key={product.objectId} className="mb-3">
-                        <ContextMenuTrigger
-                          id="menu_id"
-                          data={product.objectId}
-                          collect={collect}
-                        >
-                          <Card
-                            onClick={event =>
-                              this.handleCheckChange(event, product.objectId)
-                            }
-                            className={classnames("d-flex flex-row", {
-                              active: this.state.selectedItems.includes(
-                                product.objectId
-                              )
-                            })}
-                          >
-                            <Link
-                              to={`${this.props.match.path}/edit/${
-                                product.objectId
-                              }`}
-                              className="d-flex align-items-center pl-2"
-                            >
-                              <img
-                                alt={product.title}
-                                src={product.img}
-                                className="list-thumbnail responsive border-0"
+                            <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                              <CustomInput
+                                className="itemCheck mb-0"
+                                type="checkbox"
+                                id={`check_${user.objectId}`}
+                                checked={this.state.selectedItems.includes(
+                                  user.objectId
+                                )}
+                                onChange={() => {}}
+                                label=""
                               />
-                            </Link>
-                            <div className="pl-2 d-flex flex-grow-1 min-width-zero">
-                              <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero align-items-lg-center">
-                                <Link
-                                  to={`${this.props.match.path}/edit/${
-                                    product.objectId
-                                  }`}
-                                  className="w-30"
-                                >
-                                  <p className="list-item-heading mb-1 truncate">
-                                    {product.title}
-                                  </p>
-                                </Link>
-                                <p
-                                  className="mb-1 text-muted text-small text-justify p-lg-3"
-                                  style={{ maxWidth: "60%" }}
-                                >
-                                  {product.description}
-                                </p>
-                                <p className="mb-1 text-muted text-small w-25 w-sm-100 text-center">
-                                  {moment(product.date).format("LL")}
-                                </p>
-                              </div>
-                              <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                                <CustomInput
-                                  className="itemCheck mb-0"
-                                  type="checkbox"
-                                  id={`check_${product.objectId}`}
-                                  checked={this.state.selectedItems.includes(
-                                    product.objectId
-                                  )}
-                                  onChange={() => {}}
-                                  label=""
-                                />
-                              </div>
                             </div>
-                          </Card>
-                        </ContextMenuTrigger>
-                      </Colxx>
-                    );
-                  } else {
-                    // display mode list
-                    return (
-                      <Colxx xxs="12" key={product.objectId} className="mb-3">
-                        <ContextMenuTrigger
-                          id="menu_id"
-                          data={product.objectId}
-                          collect={collect}
+                          </div>
+                        </Card>
+                      </ContextMenuTrigger>
+                    </Colxx>
+                  );
+                } else {
+                  // display mode list
+                  return (
+                    <Colxx xxs="12" key={user.objectId} className="mb-3">
+                      <ContextMenuTrigger
+                        id="menu_id"
+                        data={user.objectId}
+                        collect={collect}
+                      >
+                        <Card
+                          onClick={event =>
+                            this.handleCheckChange(event, user.objectId)
+                          }
+                          className={classnames("d-flex flex-row", {
+                            active: this.state.selectedItems.includes(
+                              user.objectId
+                            )
+                          })}
                         >
-                          <Card
-                            onClick={event =>
-                              this.handleCheckChange(event, product.objectId)
-                            }
-                            className={classnames("d-flex flex-row", {
-                              active: this.state.selectedItems.includes(
-                                product.objectId
-                              )
-                            })}
-                          >
-                            <div className="pl-2 d-flex flex-grow-1">
-                              <div className="card-body d-flex flex-column flex-lg-row justify-content-between align-items-center">
-                                <Link
-                                  to={`${this.props.match.path}/edit/${
-                                    product.objectId
-                                  }`}
-                                  className="w-sm-100 w-20"
-                                >
-                                  <p className="list-item-heading mb-1 truncate">
-                                    {product.title}
-                                  </p>
-                                </Link>
-                                <p
-                                  className="mb-1 text-muted text-small"
-                                  style={{
-                                    maxWidth: "50%",
-                                    textAlign: "justify"
-                                  }}
-                                >
-                                  {product.description}
-                                </p>
-                                <p className="mb-1 text-muted text-small w-20 w-sm-100">
-                                  {moment(product.date).format("LL")}
-                                </p>
-                              </div>
-                              <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
-                                <CustomInput
-                                  className="itemCheck mb-0"
-                                  type="checkbox"
-                                  id={`check_${product.objectId}`}
-                                  checked={this.state.selectedItems.includes(
-                                    product.objectId
-                                  )}
-                                  onChange={() => {}}
-                                  label=""
-                                />
-                              </div>
+                          <div className="pl-2 d-flex flex-grow-1">
+                            <div className="card-body d-flex flex-column flex-lg-row justify-content-between align-items-center">
+                              <p className="list-item-heading mb-1 truncate">
+                                {user.name}
+                              </p>
+                              <p
+                                className="mb-1 text-muted text-small"
+                                style={{
+                                  maxWidth: "50%",
+                                  textAlign: "justify"
+                                }}
+                              >
+                                {user.lastName}
+                              </p>
                             </div>
-                          </Card>
-                        </ContextMenuTrigger>
-                      </Colxx>
-                    );
-                  }
-                })
+                            <div className="custom-control custom-checkbox pl-1 align-self-center pr-4">
+                              <CustomInput
+                                className="itemCheck mb-0"
+                                type="checkbox"
+                                id={`check_${user.objectId}`}
+                                checked={this.state.selectedItems.includes(
+                                  user.objectId
+                                )}
+                                onChange={() => {}}
+                                label=""
+                              />
+                            </div>
+                          </div>
+                        </Card>
+                      </ContextMenuTrigger>
+                    </Colxx>
+                  );
+                }
+              })
             ) : (
               <h1>
                 <IntlMessages id="general.no-elements" />
