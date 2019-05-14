@@ -37,7 +37,7 @@ class Dashboard extends Component {
       materials: materials.map(material => ({
         id: material.id,
         name: material.get("name"),
-        quantity: material.get("quantity")
+        quantity: parseInt(material.get("quantity"))
       }))
     });
 
@@ -51,7 +51,7 @@ class Dashboard extends Component {
       this.setState({
         materials: [
           ...materials.slice(0, index),
-          { ...materials[index], quantity: object.get("quantity") },
+          { ...materials[index], quantity: parseInt(object.get("quantity")) },
           ...materials.slice(index + 1, materials.length)
         ]
       });
