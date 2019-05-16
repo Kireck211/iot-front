@@ -340,12 +340,6 @@ class Sidebar extends Component {
                   </NavLink>
                 </NavItem>
                 <NavItem>
-                  <NavLink to="/app/catalogue/recipes">
-                    <i className="iconsmind-Receipt" />{" "}
-                    <IntlMessages id="menu.recipe" />
-                  </NavLink>
-                </NavItem>
-                <NavItem>
                   <NavLink to="/app/catalogue/orders">
                     <i className="iconsmind-Money-2" />{" "}
                     <IntlMessages id="menu.orders" />

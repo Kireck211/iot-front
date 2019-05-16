@@ -54,5 +54,10 @@ module.exports = {
   "analytics.user": "Usuario",
   "analytics.product": "Producto",
   "analytics.time": "Tiempo",
-  "analytics.quantity": "Cantidad"
+  "analytics.quantity": "Cantidad",
+
+  "products.create": "Crear producto",
+
+  "general.delete": "Borrar",
+  "orders.create": "Crear orden"
 };

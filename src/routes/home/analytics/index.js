@@ -11,10 +11,16 @@ class Analytics extends Component {
     this.materialAttributes = ["name", "quantity"];
     this.userAttributes = ["name", "lastName"];
 
+    const query = new Parse.Query(Parse.Object.extend("Product")).equalTo(
+      "objectId",
+      "Dj3mjID7eV"
+    );
+
     this.state = {
       isLoading: false,
       materials: [],
-      products: []
+      products: [],
+      subscription: query.subscribe()
     };
   }
 
@@ -147,10 +153,12 @@ class Analytics extends Component {
                       <tr key={user.id}>
                         <td>{user.name}</td>
                         <td>{product.name}</td>
-                        <td>{user.time}</td>
-                        <td>{user.quantity}</td>
+                        <td>{user.time.toFixed(2)}</td>
+                        <td>{user.quantity.toFixed(2)}</td>
                         {user.materials.map(material => (
-                          <td key={material.id}>{material.quantity}</td>
+                          <td key={material.id}>
+                            {material.quantity.toFixed(2)}
+                          </td>
                         ))}
                       </tr>
                     ))
